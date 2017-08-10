@@ -1,0 +1,21 @@
+{
+	"mySql":
+		{
+			"host":"localhost",
+			"username":"root",
+			"password":"",
+			"database":"tripkle",
+			"log":false
+		},
+	"port":8100,
+	"redis":{},
+	"memcache":{},
+	"mongo":{},
+	"maintenance":false,
+	"log":false,
+	"time_limit":"0",
+	"error_reporting":"-1",
+	"base_path":"php_framework",
+	"GCM_KEY":"AIzaSyAB1I7MCb8mVSIsNQ4QqExASL_GzhS77eA",
+	"FCM_KEY":"AAAAZkrH5wk:APA91bE5egaTJad__A8HYxdWIygQW8HJhVWRF0GNE4Yi9Q8ZOioKwM10dK1VD7dGZIVl6fsecttCQn8Vv5VkR00qsnmflV3MKAZYDc8Jvw8lx18vDF4iRceJYJ2wBcA0oEEznxlPkuK9"
+}

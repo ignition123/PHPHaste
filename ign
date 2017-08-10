@@ -1,0 +1,231 @@
+<?php
+	
+	define( 'ROOT_DIR', dirname(__DIR__));
+
+	switch($argv)
+	{
+		case strtolower($argv[1]) == 'make:controller';
+		makeController($argv);
+		break;
+		case strtolower($argv[1]) == 'make:mapping:controller';
+		makeMappingController($argv);
+		break;
+		case strtolower($argv[1]) == 'commands';
+		Commands($argv);
+		break;
+		case strtolower($argv[1]) == 'showconfig';
+		showConfig($argv);
+		break;
+		case strtolower($argv[1]) == 'showallcontrollers';
+		showAllControllers($argv);
+		break;
+		case strtolower($argv[1]) == 'startserver';
+		startServer($argv);
+		break;
+		case strtolower($argv[1]) == 'serverdown';
+		serverDown($argv);
+		break;
+		case strtolower($argv[1]) == 'serverup';
+		serverUp($argv);
+		break;
+		case strtolower($argv[1]) == 'make:cache';
+		makeCache($argv);
+		break;
+		case strtolower($argv[1]) == 'cacheall';
+		cacheALl($argv);
+		break;
+		case strtolower($argv[1]) == 'remove:cache';
+		removeCache($argv);
+		break;
+		case strtolower($argv[1]) == 'removeallcache';
+		removeAllCache($argv);
+		break;
+		default:
+		print "Please write php ign commands for help";
+	}
+
+	function removeCache($argv)
+	{
+		if(file_exists('cache_pages/'.$argv[2].'.php'))
+		{
+			unlink('cache_pages/'.$argv[2].'.php');
+
+			print "Cache file removed successfully";
+		}
+		else
+		{
+			print "No cache file found";
+		}
+	}
+
+	function removeAllCache($argv)
+	{
+		$root_dir = scandir('cache_pages/');
+		$root_dirLen = sizeof($root_dir);
+
+		for($i=0; $i<$root_dirLen; $i++)
+		{
+			if($root_dir[$i] != '.' && $root_dir[$i] != '..')
+			{
+				unlink('cache_pages/'.$root_dir[$i]);
+			}
+		}
+
+		print "All cache files are removed successfully";
+	}
+
+	function cacheALl($argv)
+	{
+		$root_dir = scandir('views/');
+		$root_dirLen = sizeof($root_dir);
+
+		for($i=0; $i<$root_dirLen; $i++)
+		{
+			if($root_dir[$i] != '.' && $root_dir[$i] != '..' &&  pathinfo('views/'.$root_dir[$i], PATHINFO_EXTENSION) == 'php')
+			{
+				$data = str_replace('"', "'", file_get_contents('views/'.$root_dir[$i]));
+				$data_Values = 
+				'<?php
+					function getPage()
+					{
+						return "'.$data.'";
+					}
+				?>';
+				$fp = fopen('cache_pages/'.$root_dir[$i],"wb");
+				fwrite($fp,$data_Values);
+				fclose($fp);
+			}
+		}
+
+		print "All files are cached";
+	}
+
+	function makeCache($argv)
+	{
+		$patharr = explode('.', $argv[2]);
+		$pathLen = sizeof($patharr);
+		$path = implode('/', $patharr).'.php';
+		$handle = fopen('views/'.$path, "r");
+		$page = str_replace('"', "'", fread($handle, filesize($path)));
+		fclose($handle);
+		$data_Values = 
+		'<?php
+			function getPage()
+			{
+				return "'.$page.'";
+			}
+		?>';
+
+		if(file_exists('cache_pages/'.$patharr[$pathLen - 1].'.php'))
+		{
+			file_put_contents('cache_pages/'.$patharr[$pathLen - 1].'.php', $data_Values);
+		}
+		else
+		{	
+			$fp = fopen('cache_pages/'.$patharr[$pathLen - 1].'.php',"wb");
+			fwrite($fp,$data_Values);
+			fclose($fp);
+		}
+
+		print "File cached successfully";
+	}
+
+	function startServer($argv)
+	{
+		$config_json = json_decode(file_get_contents(ROOT_DIR.'/php_framework/config/config.json'));
+		print "Server started type localhost:".$config_json->port." in browser";
+		shell_exec('PHP -S localhost:'.$config_json->port);
+	}
+
+	function serverDown($argv)
+	{
+		$config_json = json_decode(file_get_contents(ROOT_DIR.'/php_framework/config/config.json'));
+		$config_json->maintenance = true;
+		file_put_contents(ROOT_DIR.'/php_framework/config/config.json',json_encode($config_json));
+		print "Server is under maintenance";
+	}
+
+	function serverUp($argv)
+	{
+		$config_json = json_decode(file_get_contents(ROOT_DIR.'/php_framework/config/config.json'));
+		$config_json->maintenance = false;
+		file_put_contents(ROOT_DIR.'/php_framework/config/config.json',json_encode($config_json));
+		print "Server is live again";
+	}
+
+
+	function makeController($argv)
+	{
+		if(sizeof($argv) == 3)
+		{
+			file_put_contents(ROOT_DIR.'/php_framework/controllers/'.$argv[2].'.php', str_replace('Controller',$argv[2],file_get_contents(ROOT_DIR.'/php_framework/commandlines_files/Controller.php')));
+
+			if(file_exists(ROOT_DIR.'/php_framework/controllers/'.$argv[2].'.php'))
+			{
+				print 'Controller created successfully';
+			}
+			else
+			{
+				print 'Directory does not have read or write option';
+			}
+		}
+		else
+		{
+			print 'Three arguments are needed to create a controller, eg(php ign make:controller controller_name)';
+		}
+	}
+
+	function makeMappingController($argv)
+	{
+		if(!file_exists(ROOT_DIR.'/php_framework/'.$argv[2]))
+		{
+			mkdir(ROOT_DIR.'/php_framework/'.$argv[2],0777, true);
+		}
+
+		if(sizeof($argv) == 4)
+		{
+			file_put_contents(ROOT_DIR.'/php_framework/'.$argv[2].'/'.$argv[3].'.php', str_replace('Controller',$argv[3],file_get_contents(ROOT_DIR.'/php_framework/commandlines_files/Controller.php')));
+
+			if(file_exists(ROOT_DIR.'/php_framework/'.$argv[2].'/'.$argv[3].'.php'))
+			{
+				print 'Controller created successfully';
+			}
+			else
+			{
+				print 'Directory does not have read or write option';
+			}
+		}
+		else
+		{
+			print 'Four arguments are needed to create a controller, eg(php ign make:mapping:controller mapping_name controller_name)';
+		}
+	}
+
+	function Commands($argv)
+	{
+		print ("
+			1.) php ign make:controller (To create a controller)
+			2.) php ign make:mapping:controller (To create a mapping  controller) 
+			3.) php ign commands (To show list of commands)
+			4.) php ign showconfig (Configuration of the framework and server)
+			5.) php ign showallcontrollers (List of controllers)
+			6.) php ign serverdown (For server maintenance)
+			7.) php ign serverup (For server live)
+			8.) php ign startserver (For running server)
+			");
+	}
+
+	function showConfig($argv)
+	{
+		$config = json_decode(file_get_contents(ROOT_DIR.'/php_framework/config/config.json'));
+
+		print_r($config);
+	}
+
+	function showAllControllers($argv)
+	{
+		$controllers = array_diff(scandir(ROOT_DIR.'/php_framework/controllers'), array('..', '.'));
+
+		print_r($controllers);
+	}
+?>
